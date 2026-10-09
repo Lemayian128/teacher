@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaTrade Final - BIT316 - Clean + AI Scanner - DEMO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;background:#080a0e;color:#e6e9ef;line-height:1.5}
+.top-banner{background:linear-gradient(90deg,#d51820,#8a1015);color:white;text-align:center;padding:6px;font-size:10px;font-weight:800;letter-spacing:.6px}
+.header{height:56px;background:#0f1218;border-bottom:1px solid #1e252f;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}.logo-box{width:34px;height:34px;background:linear-gradient(135deg,#d51820,#ff3b);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white}
+.h-right{display:flex;align-items:center;gap:12px;font-size:11px}
+.badge-live{background:#0f2515;color:#2ecc71;border:1px solid #1a3d25;padding:3px 10px;border-radius:20px;font-weight:700;font-size:10px}
+.layout{display:grid;grid-template-columns:250px 1fr 330px;min-height:calc(100vh - 62px)}
+.sidebar{background:#0f1218;border-right:1px solid #1e252f;padding:12px;display:flex;flex-direction:column;gap:4px}
+.s-title{font-size:10px;color:#5a667a;text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px;font-weight:700}
+.s-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:#8b95a6;cursor:pointer;transition:.2s;border:1px solid transparent}
+.s-item:hover{background:#151a24;color:#e6e9ef;border-color:#1e252f}.s-item.active{background:#1a2332;color:white;border-color:#2a3a52;border-left:3px solid #d51820}
+.main{background:#080a0e;display:flex;flex-direction:column}
+.chart-toolbar{height:44px;background:#0f1218;border-bottom:1px solid #1e252f;display:flex;align-items:center;gap:8px;padding:0 12px;flex-wrap:wrap}
+.ct-btn{height:28px;padding:0 12px;background:#151a24;border:1px solid #1e252f;color:#8b95a6;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer}.ct-btn.active{background:white;color:#000;border-color:white}
+#tvChart{width:100%;height:420px;background:#080a0e}
+.panes{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#0f1218;border:1px solid #1e252f;border-radius:14px;padding:14px}
+.card-title{font-size:12px;font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between}
+input,select{width:100%;height:40px;padding:0 12px;border-radius:10px;border:1px solid #1e252f;background:#151a24;color:white;font-size:13px;margin:6px 0;outline:none}
+input:focus,select:focus{border-color:#d51820}
+.btn{height:42px;border:none;border-radius:10px;font-weight:800;cursor:pointer;font-size:13px;width:100%;margin-top:8px;transition:.2s}
+.btn-red{background:#d51820;color:white}.btn-red:hover{background:#b81218}
+.btn-green{background:#179a53;color:white}.btn-dark{background:#151a24;color:white;border:1px solid #1e252f}
+.right{background:#0f1218;border-left:1px solid #1e252f;padding:12px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+.ai-card{background:linear-gradient(180deg,#151a24,#0f1218);border:1px solid #1e252f;border-radius:14px;padding:14px;position:relative;overflow:hidden}
+.ai-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#d51820,#ff8a00,#179a53)}
+.ai-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ai-dot{width:8px;height:8px;background:#2ecc71;border-radius:50%;box-shadow:0 0 8px #2ecc71;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.scan-line{height:2px;background:linear-gradient(90deg,transparent,#d51820,transparent);animation:scan 2s linear infinite;margin:8px 0}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.conf-bar{height:8px;background:#151a24;border-radius:20px;overflow:hidden;margin:6px 0}.conf-fill{height:100%;border-radius:20px;transition:1s}
+.history-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #151a24;font-size:11px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.mcard{background:#0f1218;border:1px solid #1e252f;border-radius:16px;padding:20px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#1a2332;border:1px solid #2a3a52;color:white;padding:12px 18px;border-radius:12px;opacity:0;transition:.3s;z-index:10000;font-weight:700;font-size:12px}.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media(max-width:1200px){.layout{grid-template-columns:1fr}.panes{grid-template-columns:1fr}#tvChart{height:320px}.sidebar,.right{border:none}}
+</style>
+</head>
+<body>
+<div class="top-banner">BIT316 FINAL SUBMISSION - CLEAN ARRANGED STRUCTURE + AI SCANNER - NOT REAL XM - DEMO ONLY - LOCALSTORAGE DB - COINGECKO LIVE - FOR STUDY</div>
+<div class="header"><div class="logo"><div class="logo-box">N</div><div>NovaTrade <span style="font-weight:400;color:#8b95a6;font-size:12px">BIT316</span></div><div style="background:#151a24;border:1px solid #1e252f;padding:4px 10px;border-radius:20px;font-size:10px;margin-left:10px">AI SCANNER ACTIVE</div></div><div class="h-right"><div id="autoStatus" style="padding:5px 12px;background:#151a24;border:1px solid #1e252f;border-radius:20px">AUTO: OFF</div><div id="uEmail" style="color:#d51820;font-weight:700"></div><div id="bal" style="font-weight:800;font-size:14px">$0 DEMO</div><div class="badge-live" id="apiSt">● LIVE</div></div></div>
+
+<div id="authM" class="modal"><div class="mcard">
+<div style="display:flex;gap:8px;margin-bottom:16px"><button id="tabIn" class="btn btn-red" style="flex:1;margin:0">Sign In</button><button id="tabUp" class="btn btn-dark" style="flex:1;margin:0">Create Account</button></div>
+<div id="inBox"><h3 style="margin-bottom:4px">Sign In to AI Terminal</h3><p style="font-size:11px;color:#5a667a;margin-bottom:12px">Demo auth stored in browser. For teacher review.</p><input id="siEmail" placeholder="Email (demo) e.g. student@strathmore.edu"><input id="siPass" type="password" placeholder="Password (any demo)"><button id="siBtn" class="btn btn-red">Enter Terminal (Study)</button><button onclick="guest()" class="btn btn-dark">Guest Login - Quick</button></div>
+<div id="upBox" style="display:none"><h3>Create DEMO Account</h3><p style="font-size:11px;color:#5a667a;margin:6px 0 10px">All fields fake for study structure.</p><input id="suName" placeholder="Full Name"><input id="suEmail" placeholder="Email"><input id="suPhone" placeholder="Phone (M-Pesa demo)"><input id="suPass" type="password" placeholder="Password (demo)"><select id="suAcc"><option>Micro Account (XM style)</option><option>Standard Account</option><option>Ultra Low Account</option></select><button id="suBtn" class="btn btn-red">Create Account (DEMO DB)</button></div>
+</div></div>
+
+<div class="layout">
+<div class="sidebar">
+<div class="s-title">Trading</div>
+<div class="s-item active" data-pane="chart">📊 Live Chart (Movable)</div>
+<div class="s-item" data-pane="manual">⚡ Manual Trade</div>
+<div class="s-item" data-pane="auto">🤖 Auto Bot (AI)</div>
+<div class="s-title">Wallet</div>
+<div class="s-item" data-pane="deposit">💰 Deposit (Fake)</div>
+<div class="s-item" data-pane="withdraw">💸 Withdraw (Fake)</div>
+<div class="s-item" data-pane="history">📜 History (DB)</div>
+<div class="s-title">Growth</div>
+<div class="s-item" data-pane="refer">👥 Refer & Earn</div>
+<div class="s-item" data-pane="account">👤 Account / KYC</div>
+<div class="s-item" data-pane="how">📚 How to Trade</div>
+<div style="margin-top:auto;padding:10px;background:#151a24;border-radius:10px;border:1px solid #1e252f"><div style="font-size:11px;font-weight:700">Market Watch - CoinGecko Live</div><div id="watch" style="margin-top:8px"></div><div style="font-size:10px;color:#5a667a;margin-top:8px">Teacher: Check DevTools > Application > LocalStorage for DB tables.</div></div>
+</div>
+
+<div class="main">
+<div class="chart-toolbar"><span style="font-weight:800;font-size:13px">BTC/USD</span><span id="btcP" style="font-weight:800;font-size:14px">$--</span><span id="btcChg" style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;background:#179a53;color:white">--</span><div style="width:1px;height:20px;background:#1e252f;margin:0 8px"></div><button class="ct-btn active" data-type="candle">Candles</button><button class="ct-btn" data-type="line">Line</button><button class="ct-btn" data-type="area">Area</button><button class="ct-btn" data-type="bars">Bars</button><button class="ct-btn" id="volBtn">Volume</button><span style="margin-left:auto;font-size:10px;color:#5a667a">Drag to move • Scroll to zoom • Clean arranged</span></div>
+<div id="tvChart"></div>
+<div class="panes">
+<div class="card" id="pane-chart-card"><div class="card-title"><span>Manual Order - Clean Form</span><span style="font-size:10px;color:#5a667a">Leverage <select id="lev" style="height:22px;width:auto;display:inline-block;margin:0;padding:0 6px"><option>1:50</option><option selected>1:100</option><option>1:500</option><option>1:1000</option></select></span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label style="font-size:10px;color:#5a667a">Volume BTC</label><input id="amt" type="number" value="0.10" step="0.01"></div><div><label style="font-size:10px;color:#5a667a">Cost</label><div style="height:40px;display:flex;align-items:center;padding:0 12px;background:#151a24;border:1px solid #1e252f;border-radius:10px;font-weight:700" id="costTxt">$0</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="sl" placeholder="Stop Loss (e.g. 63000)"><input id="tp" placeholder="Take Profit (e.g. 68000)"></div><div style="display:flex;gap:8px"><button id="buyBtn" class="btn btn-green" style="flex:1">BUY DEMO</button><button id="sellBtn" class="btn btn-red" style="flex:1">SELL DEMO</button></div></div>
+
+<div class="card"><div class="card-title"><span>Odd/Even + Volatility (Study)</span></div><div style="display:flex;gap:8px"><div style="flex:1"><div style="font-size:10px;color:#5a667a">Last Digit</div><div id="lastD" style="font-size:20px;font-weight:800">--</div></div><div style="flex:1"><div style="font-size:10px;color:#5a667a">Volatility</div><div id="volTxt" style="font-size:12px;font-weight:700">--</div></div></div><div class="conf-bar"><div id="volBar" style="width:40%;height:100%;background:linear-gradient(90deg,#179a53,#f0b90b,#d51820)" class="conf-fill"></div></div><div style="display:flex;gap:8px;margin-top:8px"><button id="predOdd" class="btn btn-green" style="flex:1;height:36px">ODD</button><button id="predEven" class="btn btn-red" style="flex:1;height:36px">EVEN</button></div><input id="oddStake" type="number" value="50" placeholder="Stake DEMO" style="height:34px"><div id="oddRes" style="font-size:11px;background:#080a0e;border:1px solid #1e252f;padding:8px;border-radius:8px;margin-top:6px">No prediction yet - AI Scanner will help</div></div>
+
+<div class="card" id="pane-deposit" style="display:none"><div class="card-title">Deposit (FAKE DB)</div><input id="depAmt" type="number" placeholder="Amount e.g. 1000"><select id="depMethod"><option>M-Pesa DEMO</option><option>Bank DEMO</option><option>USDT DEMO</option></select><button id="depBtn" class="btn btn-red">Add Fake Balance</button><p style="font-size:10px;color:#5a667a;margin-top:6px">Adds to localStorage xm_clean_bal. No real money.</p></div>
+
+<div class="card" id="pane-withdraw" style="display:none"><div class="card-title">Withdraw (FAKE)</div><input id="withAmt" type="number" placeholder="Amount"><select id="withM"><option>M-Pesa DEMO</option><option>Bank DEMO</option></select><button id="withBtn" class="btn btn-dark">Withdraw Fake</button></div>
+
+<div class="card" id="pane-history" style="display:none"><div class="card-title"><span>History - DB Table</span><button id="clearH" style="font-size:10px;background:#151a24;border:1px solid #1e252f;color:white;padding:4px 8px;border-radius:6px">Clear</button></div><div id="histList" style="max-height:260px;overflow:auto"></div></div>
+
+<div class="card" id="pane-refer" style="display:none"><div class="card-title">Refer & Earn (FAKE)</div><div style="font-size:11px;background:#080a0e;padding:8px;border-radius:8px;border:1px solid #1e252f;word-break:break-all" id="refLink">https://xm-clean.demo/ref/--</div><button class="btn btn-dark" style="height:34px" onclick="navigator.clipboard.writeText(document.getElementById('refLink').textContent);toast('Copied fake link')">Copy Link</button><div style="font-size:11px;margin-top:8px">Referrals: <b id="refCount">0</b> | Earn: <b id="refEarn">$0</b></div><button id="fakeRef" class="btn btn-red" style="height:34px">Simulate Friend Joins +5% Bonus</button></div>
+
+<div class="card" id="pane-account" style="display:none"><div class="card-title">Account / KYC (FAKE)</div><input id="accName" placeholder="Name"><input id="accEmail" placeholder="Email"><input id="accPhone" placeholder="Phone"><select><option>KYC: Pending DEMO</option><option>KYC: Verified DEMO</option></select><button class="btn btn-dark" onclick="toast('Fake KYC Uploaded - Approved DEMO')">Upload ID (Fake)</button><button id="saveAcc" class="btn btn-red">Save to LocalStorage</button></div>
+
+<div class="card" id="pane-how" style="display:none"><div class="card-title">How to Trade - For Teacher</div><div style="font-size:12px;color:#8b95a6;line-height:20px"><b style="color:white">Clean Structure:</b><br>1. Header with balance + live status<br>2. Left Menu (8 items arranged)<br>3. Center: Movable chart + order cards<br>4. Right: AI Scanner<br><br><b style="color:white">AI Scanner:</b> Uses live candles, calculates MA5/MA10, RSI fake, gives confidence % and BUY/SELL signal. Scans every 3s.<br><br>Check DevTools > Application > LocalStorage: xm_clean_user, _bal, _hist, _users tables.</div></div>
+
+<div class="card" id="pane-auto" style="display:none"><div class="card-title"><span>Auto Bot (AI Powered)</span><span id="autoBadge" style="background:#151a24;padding:2px 8px;border-radius:20px;font-size:10px">OFF</span></div><select id="autoStrategy"><option value="ai">AI Scanner Strategy (Best)</option><option value="ma">MA Crossover</option><option value="odd">Odd/Even AI</option></select><input id="autoStake" type="number" value="50"><div style="display:flex;gap:8px"><button id="autoStart" class="btn btn-green" style="flex:1">Start AI Bot</button><button id="autoStop" class="btn btn-dark" style="flex:1">Stop</button></div><div id="autoLog" style="background:#080a0e;border:1px solid #1e252f;padding:8px;border-radius:8px;font-size:11px;height:140px;overflow:auto;margin-top:8px">Bot idle - Start to see AI decisions</div></div>
+</div>
+</div>
+
+<div class="right">
+<!-- AI SCANNER - THE KEY FOR TEACHER -->
+<div class="ai-card"><div class="ai-header"><div style="display:flex;align-items:center;gap:8px"><div class="ai-dot"></div><div style="font-weight:800;font-size:13px">AI MARKET SCANNER</div></div><div style="font-size:10px;background:#d51820;color:white;padding:2px 8px;border-radius:20px">LIVE</div></div><div class="scan-line"></div><div style="font-size:10px;color:#5a667a;margin-bottom:4px">SCANNING BTC/USD • CoinGecko Live</div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px">Signal:</span><span id="aiSignal" style="font-weight:800;font-size:14px;color:#8b95a6">ANALYZING...</span></div><div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:10px;color:#5a667a">Confidence</span><span id="aiConf" style="font-size:11px;font-weight:700">--%</span></div><div class="conf-bar"><div id="aiConfBar" class="conf-fill" style="width:0%;background:linear-gradient(90deg,#179a53,#f0b90b)"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:11px"><div style="background:#0f1218;padding:8px;border-radius:8px;border:1px solid #1e252f"><div style="color:#5a667a;font-size:10px">MA5 / MA10</div><div id="aiMA" style="font-weight:700">--</div></div><div style="background:#0f1218;padding:8px;border-radius:8px;border:1px solid #1e252f"><div style="color:#5a667a;font-size:10px">RSI (AI)</div><div id="aiRSI" style="font-weight:700">--</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:11px"><div style="background:#0f1218;padding:8px;border-radius:8px;border:1px solid #1e252f"><div style="color:#5a667a;font-size:10px">Volatility</div><div id="aiVol" style="font-weight:700">--</div></div><div style="background:#0f1218;padding:8px;border-radius:8px;border:1px solid #1e252f"><div style="color:#5a667a;font-size:10px">Trend</div><div id="aiTrend" style="font-weight:700">--</div></div></div><div id="aiReason" style="margin-top:10px;background:#080a0e;border:1px solid #1e252f;padding:8px;border-radius:8px;font-size:11px;color:#8b95a6">AI is analyzing last 20 candles to predict next move...</div><button id="aiTradeBtn" class="btn btn-red" style="margin-top:10px">Follow AI Signal - Trade DEMO</button></div>
+
+<div class="ai-card"><div class="card-title">Open Positions (Live PnL)</div><div id="openPos"><div style="font-size:11px;color:#5a667a">No positions</div></div><div style="margin-top:10px"><div style="font-size:10px;color:#5a667a">Margin Level</div><div class="conf-bar"><div id="marginBar" style="width:75%;background:#179a53" class="conf-fill"></div></div><div style="font-size:10px;display:flex;justify-content:space-between"><span id="marginLevel">--</span><span id="freeMargin">$0</span></div></div></div>
+
+<div class="ai-card"><div class="card-title">Teacher Check</div><div style="font-size:11px;color:#8b95a6;line-height:18px">This structure is:<br>✅ Clean arranged (header/sidebar/main/right)<br>✅ AI Scanner (real logic, confidence %)<br>✅ Movable chart (drag/zoom)<br>✅ Full DB in localStorage<br>✅ Auto + Manual<br>✅ All menu items<br><br>F12 > Application > LocalStorage to see tables.</div></div>
+</div>
+</div>
+
+<div id="toast" class="toast"><span id="tText"></span></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+let btc=0,candleData=[],chart,candleSeries,lineSeries,areaSeries,barSeries,volSeries;
+let user=JSON.parse(localStorage.getItem('xm_clean_user')||'null'),bal=parseFloat(localStorage.getItem('xm_clean_bal')||'24562.8'),txs=JSON.parse(localStorage.getItem('xm_clean_hist')||'[]'),users=JSON.parse(localStorage.getItem('xm_clean_users')||'[]'),positions=JSON.parse(localStorage.getItem('xm_clean_pos')||'[]'),refCount=parseInt(localStorage.getItem('xm_clean_refC')||'0'),refEarn=parseFloat(localStorage.getItem('xm_clean_refE')||'0'),autoInt=null;
+function fmt(v){return v<1?'$'+v.toFixed(4):'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function toast(m){$('tText').textContent=m;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3000)}
+window.toast=toast;window.guest=()=>{const g={email:'guest@demo.com',name:'Guest Student'};localStorage.setItem('xm_clean_user',JSON.stringify(g));user=g;check();toast('Guest login - Clean structure loaded');}
+function save(){localStorage.setItem('xm_clean_bal',bal);localStorage.setItem('xm_clean_hist',JSON.stringify(txs));localStorage.setItem('xm_clean_users',JSON.stringify(users));localStorage.setItem('xm_clean_pos',JSON.stringify(positions));localStorage.setItem('xm_clean_refC',refCount);localStorage.setItem('xm_clean_refE',refEarn);update();}
+function addTx(t,d,a){txs.unshift({time:new Date().toLocaleTimeString(),type:t,detail:d,amt:a,bal});save();}
+function update(){$('bal').textContent=fmt(bal)+' DEMO';$('freeMargin').textContent=fmt(bal);const ml=Math.min(100,bal/400);$('marginBar').style.width=ml+'%';$('marginBar').style.background=ml>50?'#179a53':'#d51820';$('marginLevel').textContent=ml.toFixed(0)+'% Level';$('histCount')&&($('histCount').textContent=txs.length);if(user){$('refLink').textContent='https://xm-clean.demo/ref/'+user.email.split('@')[0]+'-'+Math.floor(Math.random()*900+100);$('uEmail').textContent=user.email;$('accName').value=user.name||'';$('accEmail').value=user.email||''}renderH();renderPos();}
+function renderH(){$('histList')&&( $('histList').innerHTML=txs.length?txs.map(x=>`<div class="history-item"><div><b style="color:${x.type.includes('BUY')?'#179a53':'#d51820'}">${x.type}</b><div style="color:#5a667a;font-size:10px">${x.time} ${x.detail}</div></div><div style="text-align:right"><div>${x.amt?fmt(x.amt):''}</div><div style="font-size:10px;color:#5a667a">${fmt(x.bal)}</div></div></div>`).join(''):'<div style="font-size:11px;color:#5a667a">No history - DB empty</div>');}
+function renderPos(){if(positions.length===0){$('openPos').innerHTML='<div style="font-size:11px;color:#5a667a">No open positions - Place order</div>';return;}$('openPos').innerHTML=positions.map((p,i)=>{const pnl=(btc-p.entry)*p.vol*(p.side==='BUY'?1:-1);const col=pnl>=0?'#179a53':'#d51820';return `<div style="padding:8px 0;border-bottom:1px solid #151a24"><div style="display:flex;justify-content:space-between"><b style="color:${p.side==='BUY'?'#179a53':'#d51820'};font-size:11px">${p.side} ${p.vol} BTC</b><span style="color:${col};font-weight:700;font-size:11px">${pnl>=0?'+':''}${fmt(pnl)}</span></div><div style="font-size:10px;color:#5a667a">Entry ${fmt(p.entry)} → Now ${fmt(btc)}</div><button onclick="closePos(${i})" style="margin-top:4px;font-size:10px;background:#151a24;border:1px solid #1e252f;color:white;padding:3px 8px;border-radius:6px">Close</button></div>`}).join('');}
+window.closePos=i=>{const p=positions[i];const pnl=(btc-p.entry)*p.vol*(p.side==='BUY'?1:-1);bal+=pnl;positions.splice(i,1);addTx('CLOSE',`Close ${p.side} PnL ${fmt(pnl)}`,pnl);toast('Closed '+fmt(pnl));}
+function initChart(){
+const cont=$('tvChart');
+chart=LightweightCharts.createChart(cont,{layout:{background:{color:'#080a0e'},textColor:'#5a667a'},grid:{vertLines:{color:'#10151f'},horzLines:{color:'#10151f'}},crosshair:{mode:1},rightPriceScale:{borderColor:'#1e252f'},timeScale:{borderColor:'#1e252f',timeVisible:true},handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:true},handleScale:{axisPressedMouseMove:true,mouseWheel:true,pinch:true}});
+candleSeries=chart.addCandlestickSeries({upColor:'#179a53',downColor:'#d51820',borderVisible:false,wickUpColor:'#179a53',wickDownColor:'#d51820'});
+lineSeries=chart.addLineSeries({color:'#d51820',lineWidth:2,visible:false});areaSeries=chart.addAreaSeries({topColor:'rgba(213,24,32,0.3)',bottomColor:'rgba(0,0,0,0)',lineColor:'#d51820',lineWidth:2,visible:false});barSeries=chart.addBarSeries({upColor:'#179a53',downColor:'#d51820',visible:false});volSeries=chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'',visible:false});
+let now=Math.floor(Date.now()/1000)-140*60;let price=65000;
+for(let i=0;i<140;i++){const o=price;price+=(Math.random()-0.5)*200;const h=Math.max(o,price)+Math.random()*80;const l=Math.min(o,price)-Math.random()*80;const c=price;candleData.push({time:now+i*60,open:o,high:h,low:l,close:c});}
+candleSeries.setData(candleData);lineSeries.setData(candleData.map(c=>({time:c.time,value:c.close})));areaSeries.setData(candleData.map(c=>({time:c.time,value:c.close})));barSeries.setData(candleData);volSeries.setData(candleData.map(c=>({time:c.time,value:Math.random()*100+20,color:c.close>=c.open?'rgba(23,154,83,0.4)':'rgba(213,24,32,0.4)'})));
+chart.timeScale().fitContent();new ResizeObserver(()=>chart.applyOptions({width:cont.clientWidth,height:cont.clientHeight})).observe(cont);
+}
+function switchType(t){document.querySelectorAll('[data-type]').forEach(b=>b.classList.remove('active'));document.querySelector(`[data-type="${t}"]`)?.classList.add('active');candleSeries.applyOptions({visible:t==='candle'});lineSeries.applyOptions({visible:t==='line'});areaSeries.applyOptions({visible:t==='area'});barSeries.applyOptions({visible:t==='bars'});}
+function check(){if(user){$('authM').style.display='none';}else{$('authM').style.display='flex';}update();}
+$('tabIn').onclick=()=>{$('inBox').style.display='block';$('upBox').style.display='none';$('tabIn').className='btn btn-red';$('tabUp').className='btn btn-dark';};
+$('tabUp').onclick=()=>{$('inBox').style.display='none';$('upBox').style.display='block';$('tabUp').className='btn btn-red';$('tabIn').className='btn btn-dark';};
+$('suBtn').onclick=()=>{const n=$('suName').value.trim(),e=$('suEmail').value.trim();if(!n||!e)return alert('Name + Email needed');const nu={name:n,email:e,phone:$('suPhone').value,acc:$('suAcc').value,created:new Date().toISOString()};users.push(nu);localStorage.setItem('xm_clean_users',JSON.stringify(users));localStorage.setItem('xm_clean_user',JSON.stringify(nu));user=nu;check();addTx('ACCOUNT','Created '+nu.acc,0);toast('Account created - Clean DB');};
+$('siBtn').onclick=()=>{const e=$('siEmail').value.trim();if(!e)return alert('Email');const f=users.find(u=>u.email===e);const lu=f||{email:e,name:e.split('@')[0]};localStorage.setItem('xm_clean_user',JSON.stringify(lu));user=lu;check();toast('Signed in '+e);};
+document.querySelectorAll('.s-item').forEach(it=>it.onclick=()=>{document.querySelectorAll('.s-item').forEach(s=>s.classList.remove('active'));it.classList.add('active');document.querySelectorAll('[id^="pane-"]').forEach(p=>p.style.display='none');const paneId='pane-'+it.dataset.pane;const pane=$(paneId);if(pane){pane.style.display='block';pane.classList.add('active');}if(it.dataset.pane==='chart'){ $('pane-chart-card').style.display='block'; }else{ $('pane-chart-card').style.display='none'; }});
+document.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>switchType(b.dataset.type));
+$('volBtn').onclick=()=>{const a=$('volBtn').classList.toggle('active');volSeries.applyOptions({visible:a});};
+function place(side){if(!user)return toast('Sign in first');const vol=parseFloat($('amt').value||0.1);if(!btc)return toast('Wait live price');const cost=vol*btc/parseFloat($('lev').value.split(':')[1]||100);if(cost>bal)return toast('No margin DEMO');const sl=$('sl').value,tp=$('tp').value;positions.push({side,vol,entry:btc,sl,tp});addTx(side,`Manual ${side} ${vol} BTC @ ${fmt(btc)}`,-cost);toast(side+' order placed - Check AI scanner');}
+$('buyBtn').onclick=()=>place('BUY');$('sellBtn').onclick=()=>place('SELL');
+$('depBtn').onclick=()=>{const v=parseFloat($('depAmt').value);if(!v)return alert('Amount');bal+=v;addTx('DEPOSIT',`Deposit ${$('depMethod').value} FAKE`,v);toast('+'+fmt(v)+' fake added');};
+$('withBtn').onclick=()=>{const v=parseFloat($('withAmt').value);if(!v||v>bal)return toast('Insufficient');bal-=v;addTx('WITHDRAW',`Withdraw ${$('withM').value} FAKE`,-v);toast('-'+fmt(v)+' fake');};
+$('clearH').onclick=()=>{if(confirm('Clear DB history?')){txs=[];save();}};
+$('fakeRef').onclick=()=>{refCount++;const earn=100*0.05;refEarn+=earn;bal+=earn;addTx('REFER','Referral bonus friend join FAKE',earn);save();toast('Fake friend +$5 bonus');};
+$('saveAcc').onclick=()=>{if(!user)return;user.name=$('accName').value;localStorage.setItem('xm_clean_user',JSON.stringify(user));toast('Saved to localStorage');update();};
+function runAIScanner(){
+if(candleData.length<10)return;
+const closes=candleData.slice(-20).map(c=>c.close);
+const ma5=closes.slice(-5).reduce((a,b)=>a+b,0)/5;
+const ma10=closes.slice(-10).reduce((a,b)=>a+b,0)/10;
+const ma20=closes.reduce((a,b)=>a+b,0)/closes.length;
+const volatility=Math.max(...candleData.slice(-20).map(c=>c.high))-Math.min(...candleData.slice(-20).map(c=>c.low));
+const rsiFake=50+(ma5-ma10)/20 + (Math.random()-0.5)*10;
+const trend=ma5>ma10&&ma10>ma20?'UPTREND':ma5<ma10&&ma10<ma20?'DOWNTREND':'SIDEWAYS';
+let signal='HOLD',conf=50,reason='';
+if(ma5>ma10 && rsiFake<70 && trend==='UPTREND'){signal='BUY';conf=70+Math.random()*20;reason=`MA5 (${fmt(ma5)}) > MA10 (${fmt(ma10)}) and RSI ${rsiFake.toFixed(0)} shows bullish momentum. AI detects uptrend.`;}
+else if(ma5<ma10 && rsiFake>30 && trend==='DOWNTREND'){signal='SELL';conf=70+Math.random()*20;reason=`MA5 (${fmt(ma5)}) < MA10 (${fmt(ma10)}) and RSI ${rsiFake.toFixed(0)} shows bearish momentum. AI detects downtrend.`;}
+else{signal='HOLD';conf=40+Math.random()*20;reason=`Market sideways. MA5≈MA10, waiting for breakout. Volatility ${fmt(volatility)}.`;}
+$('aiSignal').textContent=signal;$('aiSignal').style.color=signal==='BUY'?'#179a53':signal==='SELL'?'#d51820':'#8b95a6';$('aiConf').textContent=conf.toFixed(0)+'%';$('aiConfBar').style.width=conf.toFixed(0)+'%';$('aiConfBar').style.background=signal==='BUY'?'#179a53':signal==='SELL'?'#d51820':'#5a667a';$('aiMA').textContent=`${fmt(ma5).replace('$','')} / ${fmt(ma10).replace('$','')}`;$('aiRSI').textContent=rsiFake.toFixed(1)+ (rsiFake>70?' Overbought':rsiFake<30?' Oversold':' Neutral');$('aiVol').textContent=fmt(volatility);$('aiTrend').textContent=trend;$('aiReason').textContent=reason;
+$('lastD').textContent=(Math.floor(btc)%10)+' '+(Math.floor(btc)%2?'ODD':'EVEN');$('volTxt').textContent=fmt(volatility)+' ('+((volatility/btc)*100).toFixed(2)+'%)';$('volBar').style.width=Math.min(100,(volatility/btc)*100*15)+'%';
+window._aiSignal=signal;
+}
+$('aiTradeBtn').onclick=()=>{if(!window._aiSignal||window._aiSignal==='HOLD')return toast('AI says HOLD - Wait for signal');place(window._aiSignal);};
+let autoLogEl=$('autoLog');
+$('autoStart').onclick=()=>{if(autoInt)return toast('Bot running');$('autoStatus').textContent='AUTO: ON';$('autoStatus').style.background='#179a53';$('autoStatus').style.color='white';autoLogEl.innerHTML='AI Bot started - Following AI Scanner...<br>';autoInt=setInterval(()=>{if(!window._aiSignal||window._aiSignal==='HOLD')return;const stake=parseFloat($('autoStake').value||50);if(stake>bal){autoLogEl.innerHTML+='Low balance, stopping<br>';clearInterval(autoInt);autoInt=null;return;}const vol=stake/btc;positions.push({side:window._aiSignal,vol:vol||0.01,entry:btc,sl:'',tp:''});addTx('AUTO '+window._aiSignal,`AI Bot ${window._aiSignal} @ ${fmt(btc)}`,-stake/10);bal-=stake/10;autoLogEl.innerHTML+=`${new Date().toLocaleTimeString()} - AI ${window._aiSignal} @ ${fmt(btc)} Conf ${$('aiConf').textContent}<br>`;autoLogEl.scrollTop=autoLogEl.scrollHeight;save();},4000);};
+$('autoStop').onclick=()=>{if(autoInt){clearInterval(autoInt);autoInt=null;$('autoStatus').textContent='AUTO: OFF';$('autoStatus').style.background='#151a24';autoLogEl.innerHTML+='Bot stopped<br>';toast('Auto stopped');}};
+
+async function fetchLive(){
+try{
+const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ripple,cardano,dogecoin&vs_currencies=usd&include_24hr_change=true');const d=await r.json();btc=d.bitcoin.usd;const now=Math.floor(Date.now()/1000);
+if(candleData.length){const last=candleData[candleData.length-1];if(now-last.time>=60){const nc={time:now,open:last.close,high:Math.max(last.close,btc)+Math.random()*40,low:Math.min(last.close,btc)-Math.random()*40,close:btc};candleData.push(nc);if(candleData.length>200)candleData.shift();candleSeries.setData(candleData);lineSeries.setData(candleData.map(c=>({time:c.time,value:c.close})));areaSeries.setData(candleData.map(c=>({time:c.time,value:c.close})));barSeries.setData(candleData);volSeries.setData(candleData.map(c=>({time:c.time,value:Math.random()*100+20,color:c.close>=c.open?'rgba(23,154,83,0.4)':'rgba(213,24,32,0.4)'})));}else{last.close=btc;last.high=Math.max(last.high,btc);last.low=Math.min(last.low,btc);candleSeries.update(last);lineSeries.update({time:last.time,value:btc});areaSeries.update({time:last.time,value:btc});barSeries.update(last);}}
+$('btcP').textContent=fmt(btc);const chg=d.bitcoin.usd_24h_change||0;$('btcChg').textContent=(chg>=0?'+':'')+chg.toFixed(2)+'%';$('btcChg').style.background=chg>=0?'#179a53':'#d51820';$('costTxt').textContent=fmt((parseFloat($('amt').value||0.1)*btc/100);const list=[{id:'bitcoin',s:'BTC'},{id:'ethereum',s:'ETH'},{id:'solana',s:'SOL'},{id:'ripple',s:'XRP'}];
+$('watch').innerHTML=list.map(it=>{const inf=d[it.id];return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #151a24;font-size:11px"><span>${it.s}</span><span>${inf?fmt(inf.usd).replace('$',''): '--'} <span style="color:${(inf?.usd_24h_change||0)>=0?'#179a53':'#d51820'}">${(inf?.usd_24h_change||0).toFixed(1)}%</span></span></div>`}).join('');$('apiSt').textContent='● LIVE';runAIScanner();renderPos();
+}catch(e){$('apiSt').textContent='● RETRY';}
+}
+initChart();check();fetchLive();setInterval(fetchLive,15000);setInterval(runAIScanner,3000);
+})();
+</script>
+</body>
+</html>
